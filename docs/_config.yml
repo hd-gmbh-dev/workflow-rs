@@ -1,0 +1,3 @@
+theme: jekyll-theme-minimal
+title: Workflow RS
+description: driving BPMN diagrams via Webassembly or native in a Rust based server
