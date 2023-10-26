@@ -1,0 +1,7 @@
+coverage
+public
+dist
+pnpm-lock.yaml
+pnpm-workspace.yaml
+wasm/**/pkg/*
+packages/core/vite.config.ts
