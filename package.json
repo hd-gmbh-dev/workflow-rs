@@ -1,0 +1,11 @@
+{
+  "name": "workflow-rs",
+  "private": true,
+  "description": "Workflow RS - driving BPMN diagrams via Webassembly or native in a Rust based server",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
