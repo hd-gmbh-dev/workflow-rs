@@ -14,7 +14,7 @@ default = ["console_error_panic_hook"]
 anyhow = "1.0.75"
 wasm-bindgen = "0.2.87"
 quick-xml = { version = "0.31.0", features = ["serialize"] }
-thiserror = "1.0.49"
+thiserror = "1.0.50"
 js-sys = "0.3.64"
 wfrs-model = { path = "../../crates/model" }
 # The `console_error_panic_hook` crate provides better debugging of panics by
@@ -25,7 +25,7 @@ console_error_panic_hook = { version = "0.1.7", optional = true }
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
 [dev-dependencies]
-wasm-bindgen-test = "0.3.34"
+wasm-bindgen-test = "0.3.37"
 
 [profile.release]
 # Tell `rustc` to optimize for small code size.

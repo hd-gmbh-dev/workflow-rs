@@ -1,6 +1,6 @@
 {
   "name": "@wfrs/parser",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "license": "MIT",
   "files": [
     "parser_bg.wasm",

@@ -1,7 +1,7 @@
 [package]
 name = "wfrs-engine"
 description = "Workflow RS - Engine to drive workflows via bpmn diagrams"
-version.workspace = true
+version = "0.0.3"
 license.workspace = true
 edition.workspace = true
 
@@ -10,10 +10,10 @@ edition.workspace = true
 [dependencies]
 anyhow = "1.0.75"
 async-recursion = "1.0.5"
-async-trait = "0.1.73"
+async-trait = "0.1.74"
 serde_json = "1"
 futures-locks = "0.7.1"
-wfrs-model = { path = "../model" }
-wfrs-validator = { path = "../validator" }
-log = "0.4.6"
+wfrs-model = { path = "../model", version = "0.0.3" }
+wfrs-validator = { path = "../validator", version = "0.0.3" }
+log = "0.4.20"
 rkyv = "0.7"

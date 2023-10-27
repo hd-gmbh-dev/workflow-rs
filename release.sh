@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cargo set-version $1
+cargo set-version --workspace $1
 npm version $1 --include-workspace-root -ws --no-git-tag-version --allow-same-version --no-workspaces-update
 git add .
 git commit -m "build: prepare release $1"
