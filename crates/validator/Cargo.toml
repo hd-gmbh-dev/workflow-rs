@@ -1,7 +1,9 @@
 [package]
 name = "wfrs-validator"
+description = "Workflow RS - Validation on expressions i.e. jsep"
 version.workspace = true
-edition = "2021"
+license.workspace = true
+edition.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
