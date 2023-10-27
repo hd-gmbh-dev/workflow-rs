@@ -1,0 +1,13 @@
+{
+  "name": "@wfrs/parser",
+  "version": "1.0.5",
+  "license": "MIT",
+  "files": [
+    "parser_bg.wasm",
+    "parser.js",
+    "parser.d.ts",
+    "snippets/**/*"
+  ],
+  "main": "parser.js",
+  "types": "parser.d.ts"
+}

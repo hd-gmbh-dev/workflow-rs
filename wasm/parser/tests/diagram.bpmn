@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_0eapdas" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.16.0">
+  <bpmn:process id="create-child" name="create-child" isExecutable="true" camunda:versionTag="2023.40.0">
+    <bpmn:extensionElements>
+      <camunda:properties>
+        <camunda:property name="autostart" />
+      </camunda:properties>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="StartEvent_0r0x36f">
+      <bpmn:outgoing>Flow_0j7nb9b</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0j7nb9b" sourceRef="StartEvent_0r0x36f" targetRef="complete_child_1" />
+    <bpmn:userTask id="complete_child_1" name="complete Child 1">
+      <bpmn:incoming>Flow_0j7nb9b</bpmn:incoming>
+      <bpmn:outgoing>Flow_0n7zlo0</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_0n7zlo0" sourceRef="complete_child_1" targetRef="complete_child_2" />
+    <bpmn:userTask id="complete_child_2" name="complete Child 2">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="validation" value="./complete_child_2.schema.json" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0n7zlo0</bpmn:incoming>
+      <bpmn:outgoing>Flow_1lb69hb</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1lb69hb" sourceRef="complete_child_2" targetRef="complete_Vaccinations" />
+    <bpmn:userTask id="complete_Vaccinations" name="child Vaccinations">
+      <bpmn:incoming>Flow_1lb69hb</bpmn:incoming>
+      <bpmn:outgoing>Flow_1gnlfu6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="assign_child_to_groups" name="assign child  to groups">
+      <bpmn:incoming>Flow_0rd1ji9</bpmn:incoming>
+      <bpmn:incoming>Flow_1hjui2b</bpmn:incoming>
+      <bpmn:outgoing>Flow_1igzlwv</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1gnlfu6" sourceRef="complete_Vaccinations" targetRef="Activity_1vz90li" />
+    <bpmn:exclusiveGateway id="Gateway_057nt6c" default="Flow_1geecar">
+      <bpmn:incoming>Flow_16ha125</bpmn:incoming>
+      <bpmn:outgoing>Flow_0rd1ji9</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1geecar</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_16ha125" sourceRef="Activity_1vz90li" targetRef="Gateway_057nt6c" />
+    <bpmn:sequenceFlow id="Flow_0rd1ji9" sourceRef="Gateway_057nt6c" targetRef="assign_child_to_groups">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" language="jsep">$steps.localGuardian1.alone == true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:userTask id="child_local_guardian_2" name="child local guardian 2">
+      <bpmn:incoming>Flow_1geecar</bpmn:incoming>
+      <bpmn:outgoing>Flow_1hjui2b</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1geecar" sourceRef="Gateway_057nt6c" targetRef="child_local_guardian_2" />
+    <bpmn:sequenceFlow id="Flow_1hjui2b" sourceRef="child_local_guardian_2" targetRef="assign_child_to_groups" />
+    <bpmn:userTask id="child_time_booking" name="child time booking">
+      <bpmn:incoming>Flow_1igzlwv</bpmn:incoming>
+      <bpmn:outgoing>Flow_1uogdgo</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1igzlwv" sourceRef="assign_child_to_groups" targetRef="child_time_booking" />
+    <bpmn:userTask id="child_fees" name="child fees">
+      <bpmn:incoming>Flow_1uogdgo</bpmn:incoming>
+      <bpmn:outgoing>Flow_0526hai</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1uogdgo" sourceRef="child_time_booking" targetRef="child_fees" />
+    <bpmn:userTask id="print_contract" name="print contract">
+      <bpmn:incoming>Flow_0526hai</bpmn:incoming>
+      <bpmn:outgoing>Flow_1e74p0k</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_0526hai" sourceRef="child_fees" targetRef="print_contract" />
+    <bpmn:endEvent id="Event_0fauq6g">
+      <bpmn:incoming>Flow_1e74p0k</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1e74p0k" sourceRef="print_contract" targetRef="Event_0fauq6g" />
+    <bpmn:userTask id="Activity_1vz90li" name="child local guardian 1">
+      <bpmn:incoming>Flow_1gnlfu6</bpmn:incoming>
+      <bpmn:outgoing>Flow_16ha125</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:textAnnotation id="TextAnnotation_0h4kjlb">
+      <bpmn:text>local guardian 1 alone?</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_0scy885" sourceRef="Flow_0rd1ji9" targetRef="TextAnnotation_0h4kjlb" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="create-child">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_0r0x36f">
+        <dc:Bounds x="156" y="212" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ew3utm_di" bpmnElement="complete_child_1">
+        <dc:Bounds x="250" y="190" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ofccmf_di" bpmnElement="complete_child_2">
+        <dc:Bounds x="410" y="190" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ruftka_di" bpmnElement="complete_Vaccinations">
+        <dc:Bounds x="570" y="190" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0ofvwqg" bpmnElement="assign_child_to_groups">
+        <dc:Bounds x="1060" y="190" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_057nt6c_di" bpmnElement="Gateway_057nt6c" isMarkerVisible="true">
+        <dc:Bounds x="915" y="205" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0yxq37g" bpmnElement="child_local_guardian_2">
+        <dc:Bounds x="890" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_06k4203" bpmnElement="child_time_booking">
+        <dc:Bounds x="1210" y="190" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_07mhkk0" bpmnElement="child_fees">
+        <dc:Bounds x="1360" y="190" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_1yrgzf6" bpmnElement="print_contract">
+        <dc:Bounds x="1510" y="190" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0fauq6g_di" bpmnElement="Event_0fauq6g">
+        <dc:Bounds x="1662" y="212" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_0h4kjlb_di" bpmnElement="TextAnnotation_0h4kjlb">
+        <dc:Bounds x="910" y="290" width="99.99999999999999" height="40.66193853427895" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0a64wya_di" bpmnElement="Activity_1vz90li">
+        <dc:Bounds x="720" y="190" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0j7nb9b_di" bpmnElement="Flow_0j7nb9b">
+        <di:waypoint x="192" y="230" />
+        <di:waypoint x="250" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0n7zlo0_di" bpmnElement="Flow_0n7zlo0">
+        <di:waypoint x="350" y="230" />
+        <di:waypoint x="410" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1lb69hb_di" bpmnElement="Flow_1lb69hb">
+        <di:waypoint x="510" y="230" />
+        <di:waypoint x="570" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1gnlfu6_di" bpmnElement="Flow_1gnlfu6">
+        <di:waypoint x="670" y="230" />
+        <di:waypoint x="720" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16ha125_di" bpmnElement="Flow_16ha125">
+        <di:waypoint x="820" y="230" />
+        <di:waypoint x="915" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0rd1ji9_di" bpmnElement="Flow_0rd1ji9">
+        <di:waypoint x="965" y="230" />
+        <di:waypoint x="1060" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1geecar_di" bpmnElement="Flow_1geecar">
+        <di:waypoint x="940" y="205" />
+        <di:waypoint x="940" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1hjui2b_di" bpmnElement="Flow_1hjui2b">
+        <di:waypoint x="990" y="120" />
+        <di:waypoint x="1025" y="120" />
+        <di:waypoint x="1025" y="210" />
+        <di:waypoint x="1060" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1igzlwv_di" bpmnElement="Flow_1igzlwv">
+        <di:waypoint x="1160" y="230" />
+        <di:waypoint x="1210" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1uogdgo_di" bpmnElement="Flow_1uogdgo">
+        <di:waypoint x="1310" y="230" />
+        <di:waypoint x="1360" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0526hai_di" bpmnElement="Flow_0526hai">
+        <di:waypoint x="1460" y="230" />
+        <di:waypoint x="1510" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1e74p0k_di" bpmnElement="Flow_1e74p0k">
+        <di:waypoint x="1610" y="230" />
+        <di:waypoint x="1662" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0scy885_di" bpmnElement="Association_0scy885">
+        <di:waypoint x="1012.5" y="230" />
+        <di:waypoint x="964" y="290" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

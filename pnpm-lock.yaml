@@ -65,7 +65,16 @@ importers:
 
   packages/vite-plugin: {}
 
-  wasm/runtime/pkg: {}
+  wasm/parser/helper:
+    devDependencies:
+      jsep:
+        specifier: ^1.3.8
+        version: 1.3.8
+      vite:
+        specifier: ^4.4.11
+        version: 4.5.0(@types/node@18.18.7)
+
+  wasm/parser/pkg: {}
 
 packages:
 
@@ -2471,6 +2480,11 @@ packages:
     hasBin: true
     dependencies:
       argparse: 2.0.1
+    dev: true
+
+  /jsep@1.3.8:
+    resolution: {integrity: sha512-qofGylTGgYj9gZFsHuyWAN4jr35eJ66qJCK4eKDnldohuUoQFbU3iZn2zjvEbd9wOAhP9Wx5DsAAduTyE1PSWQ==}
+    engines: {node: '>= 10.16.0'}
     dev: true
 
   /json-buffer@3.0.1:

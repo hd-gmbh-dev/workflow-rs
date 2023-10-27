@@ -8,3 +8,12 @@ edition.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.75"
+async-recursion = "1.0.5"
+async-trait = "0.1.73"
+serde_json = "1"
+futures-locks = "0.7.1"
+wfrs-model = { path = "../model" }
+wfrs-validator = { path = "../validator" }
+log = "0.4.6"
+rkyv = "0.7"

@@ -1,0 +1,10 @@
+[package]
+name = "wfrs-validator"
+version.workspace = true
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+wfrs-model = { path = "../model" }
+log = "0.4.6"

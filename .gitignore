@@ -20,3 +20,4 @@ yarn-error.log*
 *.sw?
 target
 cmake-build-debug
+pkg

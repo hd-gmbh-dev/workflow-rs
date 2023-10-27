@@ -1,0 +1,44 @@
+[package]
+name = "runtime"
+version.workspace = true
+authors = ["Jürgen Seitz <juergen.seitz@h-d-gmbh.de>"]
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["console_error_panic_hook"]
+
+[dependencies]
+anyhow = "1.0.75"
+async-trait = "0.1.73"
+wasm-bindgen = "0.2.87"
+wasm-bindgen-futures = "0.4.37"
+js-sys = "0.3.64"
+wfrs-model = { path = "../../crates/model" }
+wfrs-engine = { path = "../../crates/engine" }
+rexie = "0.5"
+rkyv = "0.7"
+lazy_static = "1.4"
+futures-locks = "0.7.1"
+log = "0.4.6"
+wasm-logger = "0.2.0"
+
+# The `console_error_panic_hook` crate provides better debugging of panics by
+# logging them with `console.error`. This is great for development, but requires
+# all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
+# code size when deploying.
+console_error_panic_hook = { version = "0.1.7", optional = true }
+# gloo = { version = "0.10.0", features = ["timers"] }
+
+# [build-dependencies]
+# tonic-build = { version = "0.10.2", default-features = false, features = [
+#     "prost",
+# ]}
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.34"
+
+[package.metadata.wasm-pack.profile.dev.wasm-bindgen]
+dwarf-debug-info = true

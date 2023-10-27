@@ -15,7 +15,6 @@
   "engines": {
     "node": ">=20.9.0"
   },
-  "type": "module",
   "devDependencies": {
     "@commitlint/cli": "^18.2.0",
     "@commitlint/config-conventional": "^18.1.0",
