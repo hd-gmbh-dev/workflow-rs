@@ -12,4 +12,4 @@ git push -u origin $1
 cargo publish -p wfrs-model
 cargo publish -p wfrs-validator
 cargo publish -p wfrs-engine
-pnpm publish --recursive
+pnpm publish --recursive --access public
