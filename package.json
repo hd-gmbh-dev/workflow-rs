@@ -31,10 +31,17 @@
     "prettier": "^3.0.3",
     "typescript": "*"
   },
+  "workspaces": [
+    "packages/core",
+    "packages/vite-plugin",
+    "wasm/parser/helper",
+    "wasm/parser/package_json"
+  ],
   "lint-staged": {
     "**/*.{js,ts,tsx}": [
       "eslint --fix"
     ],
     "**/*": "prettier --write --ignore-unknown"
-  }
+  },
+  "version": "0.0.2"
 }
