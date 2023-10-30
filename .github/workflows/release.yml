@@ -37,7 +37,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: Publish
-        run: pnpm publish --recursive --access public
+        run: pnpm publish --recursive --access public --no-git-checks
       - name: Workflow RS - Model
         run: cargo publish -p wfrs-model
       - name: Workflow RS - Validator
