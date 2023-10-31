@@ -16,7 +16,7 @@
     },
     "keywords": [],
     "author": "",
-    "license": "ISC",
+    "license": "MIT",
     "engines": {
         "node": ">=20.9.0"
     },
@@ -46,5 +46,5 @@
         ],
         "**/*": "prettier --write --ignore-unknown"
     },
-    "version": "0.0.11"
+    "version": "0.0.12"
 }

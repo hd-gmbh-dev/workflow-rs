@@ -1,6 +1,6 @@
 {
     "name": "@wfrs/runtime",
-    "version": "0.0.11",
+    "version": "0.0.12",
     "description": "Parse BPMN diagrams into workflow-rs binary format .wfrs",
     "license": "MIT",
     "main": "pkg/runtime.js",
@@ -9,8 +9,6 @@
         "build": "wasm-pack build --target web --release --scope wfrs --no-pack"
     },
     "files": [
-        "pkg/runtime_bg.wasm",
-        "pkg/runtime.js",
-        "pkg/runtime.d.ts"
+        "pkg"
     ]
 }
