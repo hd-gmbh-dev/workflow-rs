@@ -23,11 +23,11 @@ import {
 } from '@protobuf-ts/runtime-rpc';
 import { Subject } from 'rxjs';
 import { WorkflowClient, type IWorkflowClient } from './proto/wfrs.client';
-import { JsWorkflowDefinition, JsWorkflowInstance } from '@wfrs/runtime';
+import type { JsWorkflowDefinition, JsWorkflowInstance } from '@wfrs/runtime';
 import { WorkflowEventType, type WorkflowEvent } from './events';
 
 export { WorkflowDefinitions, WorkflowSource };
-export { JsWorkflowDefinition, JsWorkflowInstance };
+export type { JsWorkflowDefinition, JsWorkflowInstance };
 
 export type StringMap = Record<string, string>;
 

@@ -10,8 +10,8 @@ import type {
 } from './workflows';
 import {
     WorkflowStore,
-    JsWorkflowDefinition,
-    JsWorkflowInstance,
+    type JsWorkflowDefinition,
+    type JsWorkflowInstance,
 } from '@wfrs/runtime';
 export { WorkflowSource } from './source';
 export type {
@@ -32,8 +32,8 @@ export {
     type AuthCtx,
     type AuthContextProvider,
     WorkflowStore,
-    JsWorkflowDefinition,
-    JsWorkflowInstance,
+    type JsWorkflowDefinition,
+    type JsWorkflowInstance,
     WorkflowRs,
 };
 
