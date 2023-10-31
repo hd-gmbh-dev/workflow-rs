@@ -20,6 +20,10 @@
     "engines": {
         "node": ">=20.9.0"
     },
+    "workspaces": [
+        "wasm/*",
+        "packages/*"
+    ],
     "devDependencies": {
         "@commitlint/cli": "^18.2.0",
         "@commitlint/config-conventional": "^18.1.0",
@@ -42,5 +46,5 @@
         ],
         "**/*": "prettier --write --ignore-unknown"
     },
-    "version": "0.0.10"
+    "version": "0.0.11"
 }
