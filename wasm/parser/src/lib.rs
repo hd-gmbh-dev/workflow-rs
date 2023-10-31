@@ -22,8 +22,9 @@ use wfrs_model::{
     TaskDef, UserTaskDef, WorkflowDefinition, WorkflowProperties,
 };
 use std::io::SeekFrom;
-#[wasm_bindgen(module = "/helper/dist/helper.js")]
+#[wasm_bindgen(module = "@wfrs/vite-plugin-helper")]
 extern "C" {
+    #[wasm_bindgen(js_name = "parseJsepExpression")]
     fn parse_jsep_expression(s: String) -> String;
 }
 

@@ -4,6 +4,8 @@ dist
 pnpm-lock.yaml
 pnpm-workspace.yaml
 wasm/**/pkg/*
-wasm/parser/helper/src/main.js
+packages/core/src/proto
 packages/core/vite.config.ts
+packages/pinia/vite.config.ts
+packages/pinia/src/vite-env.d.ts
 .eslintrc.cjs

@@ -1,48 +1,40 @@
 on:
-  push:
-    tags:
-      - 'v*'
+    push:
+        tags:
+            - 'v*'
 name: Release
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - name: Install
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '20.x'
-          registry-url: 'https://registry.npmjs.org'
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
-      - name: Install dependencies
-        run: pnpm install
-      - name: Build parser helper
-        run: pnpm --filter ./wasm/parser/helper build
-      - name: Build Parser package
-        working-directory: ./wasm/parser
-        run: wasm-pack build --target nodejs --release --scope wfrs
-      - name: Build Runtime package
-        working-directory: ./wasm/runtime
-        run: wasm-pack build --target web --release --scope wfrs
-      - name: Copy package.json to parser
-        run: cp wasm/parser/package_json/package.json wasm/parser/pkg
-      - uses: dtolnay/rust-toolchain@stable
-      - name: cargo login
-        run: cargo login ${{ secrets.CRATES_TOKEN }}
-      - name: Set publishing config
-        run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-      - name: Publish
-        run: pnpm publish --recursive --access public --no-git-checks
-      - name: Workflow RS - Model
-        run: cargo publish -p wfrs-model
-      - name: Workflow RS - Validator
-        run: cargo publish -p wfrs-validator
-      - name: Workflow RS - Engine
-        run: cargo publish -p wfrs-engine
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  submodules: recursive
+            - name: Install
+              run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: '20.x'
+                  registry-url: 'https://registry.npmjs.org'
+            - uses: pnpm/action-setup@v2
+              with:
+                  version: 8
+            - name: Install dependencies
+              run: pnpm install
+            - name: Build workflow-rs
+              run: pnpm build
+            - uses: dtolnay/rust-toolchain@stable
+            - name: cargo login
+              run: cargo login ${{ secrets.CRATES_TOKEN }}
+            - name: Set publishing config
+              run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
+              env:
+                  NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+            - name: Publish
+              run: pnpm publish --recursive --access public --no-git-checks
+            - name: Workflow RS - Model
+              run: cargo publish -p wfrs-model
+            - name: Workflow RS - Validator
+              run: cargo publish -p wfrs-validator
+            - name: Workflow RS - Engine
+              run: cargo publish -p wfrs-engine

@@ -1,17 +1,25 @@
 {
-  "name": "@wfrs/core",
-  "version": "0.0.10",
-  "type": "module",
-  "main": "./dist/core.js",
-  "types": "./dist/main.d.ts",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
-  },
-  "devDependencies": {
-    "typescript": "^5.0.2",
-    "vite": "^4.4.5",
-    "vite-plugin-dts": "^3.6.1"
-  }
+    "name": "@wfrs/core",
+    "version": "0.0.10",
+    "type": "module",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsup",
+        "lint": "eslint",
+        "codegen": "protoc --ts_out ./src/proto --ts_opt long_type_string --ts_opt optimize_code_size   --proto_path ../../workflow-rs-proto ../../workflow-rs-proto/wfrs.proto"
+    },
+    "dependencies": {
+        "@protobuf-ts/runtime": "^2.9.1",
+        "@protobuf-ts/runtime-rpc": "^2.9.1",
+        "@protobuf-ts/grpcweb-transport": "^2.9.1",
+        "rxjs": "^7.8.1",
+        "@wfrs/runtime": "workspace:*"
+    },
+    "devDependencies": {
+        "@protobuf-ts/plugin": "^2.9.1",
+        "@types/node": "^20.8.2",
+        "typescript": "^5.2.2",
+        "tsup": "^7.2.0"
+    }
 }

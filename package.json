@@ -1,47 +1,46 @@
 {
-  "name": "workflow-rs",
-  "private": true,
-  "description": "Workflow RS - driving BPMN diagrams via Webassembly or native in a Rust based server",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint .",
-    "format": "prettier --write .",
-    "prepare": "husky install",
-    "core": "pnpm --filter core"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "engines": {
-    "node": ">=20.9.0"
-  },
-  "devDependencies": {
-    "@commitlint/cli": "^18.2.0",
-    "@commitlint/config-conventional": "^18.1.0",
-    "@typescript-eslint/eslint-plugin": "^6.4.0",
-    "eslint": "^8.0.1",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-config-standard-with-typescript": "^39.1.1",
-    "eslint-plugin-import": "^2.25.2",
-    "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
-    "eslint-plugin-prettier": "^5.0.1",
-    "eslint-plugin-promise": "^6.0.0",
-    "husky": "^8.0.3",
-    "lint-staged": "^15.0.2",
-    "prettier": "^3.0.3",
-    "typescript": "*"
-  },
-  "workspaces": [
-    "packages/core",
-    "packages/vite-plugin",
-    "wasm/parser/helper",
-    "wasm/parser/package_json"
-  ],
-  "lint-staged": {
-    "**/*.{js,ts,tsx}": [
-      "eslint --fix"
-    ],
-    "**/*": "prettier --write --ignore-unknown"
-  },
-  "version": "0.0.10"
+    "name": "workflow-rs",
+    "private": true,
+    "description": "Workflow RS - driving BPMN diagrams via Webassembly or native in a Rust based server",
+    "scripts": {
+        "format": "prettier --write .",
+        "prepare": "husky install",
+        "codegen": "pnpm --filter ./packages/core codegen",
+        "build:vite-plugin-helper": "pnpm --filter ./packages/vite-plugin-helper build",
+        "build:parser": "pnpm --filter ./wasm/parser build",
+        "build:vite-plugin": "pnpm --filter ./packages/vite-plugin build",
+        "build:runtime": "pnpm --filter ./wasm/runtime build",
+        "build:core": "pnpm --filter ./packages/core build",
+        "build:pinia": "pnpm --filter ./packages/pinia build",
+        "build": "pnpm build:vite-plugin-helper && pnpm build:parser && pnpm build:vite-plugin && pnpm build:runtime && pnpm build:core && pnpm build:pinia"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "engines": {
+        "node": ">=20.9.0"
+    },
+    "devDependencies": {
+        "@commitlint/cli": "^18.2.0",
+        "@commitlint/config-conventional": "^18.1.0",
+        "@typescript-eslint/eslint-plugin": "^6.4.0",
+        "eslint": "^8.0.1",
+        "eslint-config-prettier": "^9.0.0",
+        "eslint-config-standard-with-typescript": "^39.1.1",
+        "eslint-plugin-import": "^2.25.2",
+        "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
+        "eslint-plugin-prettier": "^5.0.1",
+        "eslint-plugin-promise": "^6.0.0",
+        "husky": "^8.0.3",
+        "lint-staged": "^15.0.2",
+        "prettier": "^3.0.3",
+        "typescript": "*"
+    },
+    "lint-staged": {
+        "**/*.{js,ts,tsx}": [
+            "eslint --fix"
+        ],
+        "**/*": "prettier --write --ignore-unknown"
+    },
+    "version": "0.0.10"
 }
