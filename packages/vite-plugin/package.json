@@ -1,6 +1,6 @@
 {
     "name": "@wfrs/vite-plugin",
-    "version": "0.0.12",
+    "version": "0.0.13",
     "description": "Workflow RS - Vite plugin to parse and hot reload bpmn diagrams",
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 cargo set-version --workspace $1
+cargo build
 npm version $1 --include-workspace-root -ws --no-git-tag-version --allow-same-version --no-workspaces-update
 pnpm i
 pnpm build

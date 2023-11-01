@@ -1,17 +1,20 @@
 {
     "name": "@wfrs/parser",
-    "version": "0.0.12",
+    "version": "0.0.13",
     "description": "Parse BPMN diagrams into workflow-rs binary format .wfrs",
     "license": "MIT",
     "scripts": {
         "build": "wasm-pack build --target nodejs --release --scope wfrs --no-pack"
     },
-    "files": [
-        "pkg"
-    ],
     "dependencies": {
         "@wfrs/vite-plugin-helper": "workspace:*"
     },
     "main": "pkg/parser.js",
-    "types": "pkg/parser.d.ts"
+    "types": "pkg/parser.d.ts",
+    "files": [
+        "pkg/parser_bg.wasm",
+        "pkg/parser_bg.wasm.d.ts",
+        "pkg/parser.d.ts",
+        "pkg/parser.js"
+    ]
 }
