@@ -3,3 +3,5 @@ public
 dist
 pnpm-lock.yaml
 pnpm-workspace.yaml
+packages/core/src/proto/wfrs.client.ts
+packages/core/src/proto/wfrs.ts

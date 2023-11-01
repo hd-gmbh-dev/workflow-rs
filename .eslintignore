@@ -9,3 +9,5 @@ packages/core/vite.config.ts
 packages/pinia/vite.config.ts
 packages/pinia/src/vite-env.d.ts
 .eslintrc.cjs
+packages/core/src/proto/wfrs.client.ts
+packages/core/src/proto/wfrs.ts
