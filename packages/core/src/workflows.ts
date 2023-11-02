@@ -1,10 +1,3 @@
-// TODO: fix eslint errors for the following rules
-/* eslint-disable @typescript-eslint/naming-convention */
-/* eslint-disable @typescript-eslint/no-dynamic-delete */
-/* eslint-disable @typescript-eslint/no-misused-promises */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import WorkflowDefinitions from './definitions';
 import { WorkflowSource } from './source';
 import {
@@ -13,13 +6,18 @@ import {
     IsSyncRequest,
     ListenRequest,
     LoadRequest,
+    type OptLoadResponse,
     UpdateRequest,
+    type LoadResponse,
+    type IsSyncResponse,
+    type ListenResponse,
 } from './proto/wfrs';
 import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport';
 import {
     type RpcOptions,
     type UnaryCall,
     type ServerStreamingCall,
+    type FinishedUnaryCall,
 } from '@protobuf-ts/runtime-rpc';
 import { Subject } from 'rxjs';
 import { WorkflowClient, type IWorkflowClient } from './proto/wfrs.client';
@@ -31,13 +29,13 @@ export type { JsWorkflowDefinition, JsWorkflowInstance };
 
 export type StringMap = Record<string, string>;
 
-export type AnyMap = Record<string, any>;
+export type AnyMap = Record<string, unknown>;
 
 export interface Route {
     path: string;
     params: StringMap;
     query: StringMap;
-    meta?: AnyMap;
+    meta?: AnyMap | null;
 }
 
 export interface Router {
@@ -59,17 +57,17 @@ export interface TaskInfo {
 }
 
 export interface Workflow {
-    definition: JsWorkflowDefinition | undefined;
+    definition: JsWorkflowDefinition | null;
     exist: boolean;
-    existRemote?: boolean;
-    remoteId?: string;
-    remoteVersion?: bigint;
-    state?: Uint8Array;
+    existRemote: boolean;
+    remoteId: string;
+    remoteVersion?: bigint | null;
+    state: Uint8Array;
     definitionId: string;
     instanceId: string;
     version: string;
-    cancelTo?: string;
-    completeTo?: string;
+    cancelTo: string;
+    completeTo: string;
 }
 
 export interface SessionStore {
@@ -77,20 +75,20 @@ export interface SessionStore {
     authToken: string;
 }
 export interface RouteParams {
-    instanceId?: string;
+    instanceId: string;
 }
 export interface RouteMeta {
-    definitionId?: string;
+    definitionId: string;
 }
 export interface RouteCtx {
-    definitionId?: string;
+    definitionId: string;
     instanceId: string;
-    completeTo?: string;
-    cancelTo?: string;
+    completeTo: string;
+    cancelTo: string;
 }
 export interface AuthCtx {
-    token?: string;
-    userId?: string;
+    token: string;
+    userId: string;
 }
 export interface Freeable {
     free: () => void;
@@ -103,10 +101,16 @@ export type AuthContextProvider = () => AuthCtx;
 function defaultRouteContextProvider(): RouteCtx {
     return {
         instanceId: '0',
+        cancelTo: '',
+        completeTo: '',
+        definitionId: '',
     };
 }
 function defaultAuthContextProvider(): AuthCtx {
-    return {};
+    return {
+        token: '',
+        userId: '',
+    };
 }
 export type Option<T> = T | null;
 export type UpdateFn<T> = (t: T) => Option<T>;
@@ -149,8 +153,8 @@ export class InstanceState<T> {
 
     setWith(c: RouteCtx, state: T): void {
         const { definitionId, instanceId } = c;
-        if (definitionId && instanceId) {
-            this.data[definitionId] = this.data[definitionId] || {};
+        if (definitionId !== '' && instanceId !== '') {
+            this.data[definitionId] = this.data[definitionId] ?? {};
             this.data[definitionId][instanceId] = state;
         }
     }
@@ -162,15 +166,13 @@ export class InstanceState<T> {
 
     updateWith(c: RouteCtx, updateFn: UpdateFn<T>): void {
         const { definitionId, instanceId } = c;
-        if (definitionId && instanceId) {
-            if (
-                this.data[definitionId] &&
-                this.data[definitionId][instanceId]
-            ) {
-                const nextState: Option<T> = updateFn(
-                    this.data[definitionId][instanceId] as T,
-                );
-                if (nextState) {
+        if (definitionId !== '' && instanceId !== '') {
+            const d0: Record<string, Option<T>> = this.data[definitionId] ?? {};
+            const d1: Option<T> = this.data[definitionId][instanceId] ?? null;
+            if (Object.keys(d0).length > 0 && d1 !== null) {
+                const nextState: Option<T> =
+                    updateFn(this.data[definitionId][instanceId] as T) ?? null;
+                if (nextState !== null) {
                     this.data[definitionId][instanceId] = nextState;
                 }
             }
@@ -184,28 +186,22 @@ export class InstanceState<T> {
 
     async deleteWith(c: RouteCtx): Promise<void> {
         const { definitionId, instanceId } = c;
-        if (definitionId && instanceId) {
-            if (
-                this.data[definitionId] &&
-                this.data[definitionId][instanceId]
-            ) {
-                if (
-                    (this.data[definitionId][instanceId] as Destroyable).destroy
-                ) {
+        if (definitionId !== '' && instanceId !== '') {
+            const d0: Record<string, Option<T>> = this.data[definitionId] ?? {};
+            const d1: Option<T> = this.data[definitionId][instanceId] ?? null;
+            if (Object.keys(d0).length > 0 && d1 !== null) {
+                if ((d1 as Destroyable).destroy !== null) {
                     const destroyable = this.data[definitionId][
                         instanceId
                     ] as Destroyable;
                     await destroyable.destroy();
-                } else if (
-                    (this.data[definitionId][instanceId] as Freeable).free
-                ) {
+                } else if ((d1 as Freeable).free !== null) {
                     const freeable = this.data[definitionId][
                         instanceId
                     ] as Freeable;
                     freeable.free();
                 }
                 this.data[definitionId][instanceId] = null;
-                delete this.data[definitionId][instanceId];
             }
         }
     }
@@ -258,10 +254,8 @@ export class WorkflowRs {
                         input,
                         options,
                     ): ServerStreamingCall {
-                        if (!options.meta) {
-                            options.meta = {};
-                        }
-                        if (context.authContextProvider().token) {
+                        options.meta = options.meta ?? {};
+                        if (context.authContextProvider().token !== '') {
                             options.meta.Authorization = `Bearer ${
                                 context.authContextProvider().token
                             }`;
@@ -274,10 +268,8 @@ export class WorkflowRs {
                         input,
                         options: RpcOptions,
                     ): UnaryCall {
-                        if (!options.meta) {
-                            options.meta = {};
-                        }
-                        if (context.authContextProvider().token) {
+                        options.meta = options.meta ?? {};
+                        if (context.authContextProvider().token !== '') {
                             options.meta.Authorization = `Bearer ${
                                 context.authContextProvider().token
                             }`;
@@ -306,7 +298,7 @@ export class WorkflowRs {
         const { definitionId, instanceId, cancelTo, completeTo } =
             this.context.routeContextProvider();
         const { userId } = this.context.authContextProvider();
-        if (definitionId && userId) {
+        if (definitionId !== '' && userId !== '') {
             this.notify({
                 type: WorkflowEventType.LoadDefinition,
                 payload: { id: definitionId, version: '' },
@@ -318,18 +310,24 @@ export class WorkflowRs {
                 completeTo,
             );
             if (!result.exist) {
-                const remote = await this.client?.load(
-                    LoadRequest.create({
-                        ctx: result.instanceId,
-                        def: result.definitionId,
-                        ver: result.version,
-                    }),
-                );
-                if (remote?.response.workflow) {
+                const remote: FinishedUnaryCall<
+                    LoadRequest,
+                    OptLoadResponse
+                > | null =
+                    (await this.client?.load(
+                        LoadRequest.create({
+                            ctx: result.instanceId,
+                            def: result.definitionId,
+                            ver: result.version,
+                        }),
+                    )) ?? null;
+                const workflow: LoadResponse | null =
+                    remote?.response.workflow ?? null;
+                if (workflow !== null) {
                     result.existRemote = true;
-                    result.state = remote.response.workflow.state;
-                    result.remoteId = remote.response.workflow.key?.id;
-                    result.remoteVersion = BigInt(remote.response.workflow.ts);
+                    result.state = workflow.state;
+                    result.remoteId = workflow.key?.id ?? '';
+                    result.remoteVersion = BigInt(workflow.ts);
                 }
             }
             this.notify({
@@ -343,40 +341,51 @@ export class WorkflowRs {
     async loadWith(
         definitionId: string,
         instanceId: string,
-        cancelTo?: string,
-        completeTo?: string,
+        cancelTo: string,
+        completeTo: string,
     ): Promise<Workflow> {
-        const definition = await WorkflowDefinitions.load(definitionId);
-        const version = definition?.version() || '';
-        let exist = await definition?.exist(instanceId);
+        const definition: JsWorkflowDefinition | null =
+            (await WorkflowDefinitions.load(definitionId)) ?? null;
+        const version = definition?.version() ?? '';
+        let exist: boolean = (await definition?.exist(instanceId)) ?? false;
         if (exist) {
             this.notify({
                 type: WorkflowEventType.LoadInstance,
                 payload: null,
             });
-            const instance = await definition?.load(instanceId);
-            if (instance) {
-                const remote_id = await instance?.get_remote_id();
-                if (remote_id) {
-                    const synced = await this.client?.isSync(
-                        IsSyncRequest.create({
-                            key: { id: remote_id.id() },
-                            ts: remote_id.ts.toString(),
-                        }),
-                    );
-                    if (!synced?.response.sync) {
+            const instance: JsWorkflowInstance | null =
+                (await definition?.load(instanceId)) ?? null;
+            if (instance !== null) {
+                const remoteId = (await instance?.get_remote_id()) ?? '';
+                if (remoteId !== '') {
+                    const synced: FinishedUnaryCall<
+                        IsSyncRequest,
+                        IsSyncResponse
+                    > | null =
+                        (await this.client?.isSync(
+                            IsSyncRequest.create({
+                                key: { id: remoteId.id() },
+                                ts: remoteId.ts.toString(),
+                            }),
+                        )) ?? null;
+                    if (synced !== null && !synced.response.sync) {
                         exist = false;
                         await instance.destroy();
                     } else {
                         this.instances.setWith(
-                            { definitionId, instanceId },
+                            {
+                                definitionId,
+                                instanceId,
+                                cancelTo: '',
+                                completeTo: '',
+                            },
                             instance,
                         );
                         await this.instanceUpdate(
                             WorkflowEventType.LoadedInstance,
-                            remote_id.id(),
+                            remoteId.id(),
                             instance,
-                            remote_id.ts.toString(),
+                            remoteId.ts.toString(),
                         );
                         return {
                             definition,
@@ -386,6 +395,10 @@ export class WorkflowRs {
                             version,
                             cancelTo,
                             completeTo,
+                            existRemote: false,
+                            remoteId: '',
+                            state: new Uint8Array(),
+                            remoteVersion: null,
                         };
                     }
                 }
@@ -399,23 +412,108 @@ export class WorkflowRs {
             version,
             cancelTo,
             completeTo,
+            existRemote: false,
+            remoteId: '',
+            state: new Uint8Array(),
+            remoteVersion: null,
         };
+    }
+
+    async timeout(): Promise<null> {
+        return await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
+    async listenerFn(m: ListenResponse, workflow: Workflow): Promise<null> {
+        let instance;
+        let active;
+        switch (m.event.oneofKind) {
+            case 'updateEvent':
+                if (this.ignoreNextUpdate) {
+                    this.ignoreNextUpdate = false;
+                    return await Promise.resolve(null);
+                }
+                instance = this.instances.getWith(workflow) ?? null;
+                if (instance !== null) {
+                    await instance.set_state(m.event.updateEvent.state);
+                    active = await instance?.get_active();
+                    await this.updateNav(
+                        workflow.definitionId,
+                        workflow.instanceId,
+                        instance,
+                    );
+                    await this.updateRoute(
+                        workflow.definitionId,
+                        workflow.instanceId,
+                        active,
+                    );
+                    if (m.event.updateEvent.ts !== '') {
+                        await this.instanceUpdate(
+                            WorkflowEventType.InstanceUpdate,
+                            workflow.remoteId,
+                            instance,
+                            m.event.updateEvent.ts,
+                        );
+                    }
+                }
+                break;
+            case 'completeEvent':
+                if (this.ignoreNextComplete) {
+                    this.ignoreNextComplete = false;
+                    return await Promise.resolve(null);
+                }
+                instance = this.instances.getWith(workflow) ?? null;
+                if (instance !== null) {
+                    await this.instances.deleteWith(workflow);
+                    await this.variables.deleteWith(workflow);
+                    await this.taskInfoLists.deleteWith(workflow);
+                    if (
+                        m.event.completeEvent !== null &&
+                        m.event.completeEvent.cancelled
+                    ) {
+                        this.notify({
+                            type: WorkflowEventType.Cancelled,
+                            payload: {
+                                cancelTo: workflow.cancelTo,
+                                definitionId: workflow.definitionId,
+                                instanceId: workflow.instanceId,
+                            },
+                        });
+                    } else {
+                        this.notify({
+                            type: WorkflowEventType.Completed,
+                            payload: {
+                                completeTo: workflow.completeTo,
+                                definitionId: workflow.definitionId,
+                                instanceId: workflow.instanceId,
+                            },
+                        });
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+
+        return await Promise.resolve(null);
     }
 
     async resume(): Promise<void> {
         this.notify({ type: WorkflowEventType.ResumeStart, payload: null });
-        const workflow = await this.load();
-        if (workflow) {
+        const workflow: Workflow | null = (await this.load()) ?? null;
+        if (workflow !== null) {
             if (workflow.exist) {
                 await this.restore(workflow);
             } else if (
                 workflow.existRemote &&
-                workflow.state &&
-                workflow.remoteId &&
-                workflow.remoteVersion
+                workflow.state.length > 0 &&
+                workflow.remoteId !== '' &&
+                workflow.remoteVersion !== null
             ) {
                 await this.restoreRemote(workflow);
-            } else if (workflow.definition?.has_autostart()) {
+            } else if (
+                workflow.definition !== null &&
+                workflow.definition.has_autostart()
+            ) {
                 await this.startWith(workflow, true);
             }
             this.notify({ type: WorkflowEventType.ResumeEnd, payload: null });
@@ -423,115 +521,49 @@ export class WorkflowRs {
             this.notify({ type: WorkflowEventType.ResumeError, payload: null });
         }
 
-        if (workflow?.remoteId) {
-            setTimeout(async () => {
-                this.abortController = new AbortController();
-                const listener = this.client?.listen(
-                    ListenRequest.create({
-                        key: { id: workflow?.remoteId },
-                    }),
-                    { abort: this.abortController.signal },
-                );
-                listener?.responses.onComplete(() => {
-                    console.log('LISTEN: is completed');
-                });
-                listener?.responses.onError((_) => {});
-                listener?.responses.onMessage(async (m) => {
-                    let instance;
-                    let active;
-                    switch (m.event.oneofKind) {
-                        case 'updateEvent':
-                            if (this.ignoreNextUpdate) {
-                                this.ignoreNextUpdate = false;
-                                return;
-                            }
-                            instance = this.instances.getWith(workflow);
-                            if (instance) {
-                                await instance.set_state(
-                                    m.event.updateEvent.state,
-                                );
-                                active = await instance?.get_active();
-                                await this.updateNav(
-                                    workflow.definitionId,
-                                    workflow.instanceId,
-                                    instance,
-                                );
-                                await this.updateRoute(
-                                    workflow.definitionId,
-                                    workflow.instanceId,
-                                    active,
-                                );
-                                if (m.event.updateEvent.ts) {
-                                    await this.instanceUpdate(
-                                        WorkflowEventType.InstanceUpdate,
-                                        workflow.remoteId!,
-                                        instance,
-                                        m.event.updateEvent.ts,
-                                    );
-                                }
-                            }
-                            break;
-                        case 'completeEvent':
-                            if (this.ignoreNextComplete) {
-                                this.ignoreNextComplete = false;
-                                return;
-                            }
-                            instance = this.instances.getWith(workflow);
-                            if (instance) {
-                                await this.instances.deleteWith(workflow);
-                                await this.variables.deleteWith(workflow);
-                                await this.taskInfoLists.deleteWith(workflow);
-                                if (
-                                    m.event.completeEvent &&
-                                    m.event.completeEvent.cancelled
-                                ) {
-                                    this.notify({
-                                        type: WorkflowEventType.Cancelled,
-                                        payload: {
-                                            cancelTo: workflow.cancelTo,
-                                            definitionId: workflow.definitionId,
-                                            instanceId: workflow.instanceId,
-                                        },
-                                    });
-                                } else {
-                                    this.notify({
-                                        type: WorkflowEventType.Completed,
-                                        payload: {
-                                            completeTo: workflow.completeTo,
-                                            definitionId: workflow.definitionId,
-                                            instanceId: workflow.instanceId,
-                                        },
-                                    });
-                                }
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                });
-                try {
-                    await listener;
-                } catch (_) {}
-            }, 0);
+        if (workflow !== null && workflow.remoteId !== '') {
+            await this.timeout();
+            this.abortController = new AbortController();
+            const listener = this.client?.listen(
+                ListenRequest.create({
+                    key: { id: workflow?.remoteId },
+                }),
+                { abort: this.abortController.signal },
+            );
+            listener?.responses.onComplete(() => {
+                console.log('LISTEN: is completed');
+            });
+            listener?.responses.onError((_) => {});
+            listener?.responses.onMessage(() => {
+                return this.listenerFn.bind(workflow);
+            });
+            try {
+                await listener;
+            } catch (_) {}
         }
+
+        await Promise.resolve();
     }
 
     leave(): void {
-        if (this.abortController) {
-            this.abortController.abort();
+        if (this.abortController !== null) {
+            this.abortController?.abort();
             this.abortController = undefined;
         }
     }
 
     async restore(workflow: Workflow): Promise<void> {
-        const instance = this.instances.getWith({
-            definitionId: workflow.definitionId,
-            instanceId: workflow.instanceId,
-        });
+        const instance =
+            this.instances.getWith({
+                definitionId: workflow.definitionId,
+                instanceId: workflow.instanceId,
+                cancelTo: '',
+                completeTo: '',
+            }) ?? null;
         const active = await instance?.get_active();
-        if (active !== undefined && instance) {
-            const remoteId = await instance.get_remote_id();
-            if (remoteId) {
+        if (active !== undefined && instance !== null) {
+            const remoteId = await instance?.get_remote_id();
+            if (remoteId !== undefined) {
                 workflow.remoteId = remoteId.id();
             }
             await this.updateRoute(
@@ -549,7 +581,12 @@ export class WorkflowRs {
     }
 
     async restoreRemote(workflow: Workflow): Promise<void> {
-        if (workflow.remoteId && workflow.remoteVersion && workflow.state) {
+        if (
+            workflow.remoteId !== '' &&
+            workflow.remoteVersion !== undefined &&
+            workflow.remoteVersion !== null &&
+            workflow.state.length > 0
+        ) {
             const instance = await workflow.definition?.restore(
                 workflow.instanceId,
                 workflow.remoteId,
@@ -562,6 +599,8 @@ export class WorkflowRs {
                     {
                         definitionId: workflow.definitionId,
                         instanceId: workflow.instanceId,
+                        cancelTo: '',
+                        completeTo: '',
                     },
                     instance,
                 );
@@ -571,7 +610,7 @@ export class WorkflowRs {
                     active,
                     true,
                 );
-                if (instance) {
+                if (instance !== undefined) {
                     await this.updateNav(
                         workflow.definitionId,
                         workflow.instanceId,
@@ -589,30 +628,32 @@ export class WorkflowRs {
     }
 
     async complete(): Promise<void> {
-        const c = this.context.routeContextProvider();
-        if (c) {
+        const c: RouteCtx = this.context.routeContextProvider() ?? null;
+        if (c !== null) {
             const { definitionId, instanceId } = c;
-            if (definitionId && instanceId) {
+            if (definitionId !== '' && instanceId !== '') {
                 const instance = this.instances.getWith(c);
-                if (instance) {
+                if (instance !== undefined && instance !== null) {
                     const active = await instance?.get_active();
                     if (active !== undefined) {
                         await instance.complete(active);
                         const isCompleted = await instance.is_completed();
-                        const remote_id = await instance.get_remote_id();
-                        const state = await instance.state();
-                        if (remote_id && state) {
+                        const remoteId =
+                            (await instance.get_remote_id()) ?? null;
+                        const state =
+                            (await instance.state()) ?? new Uint8Array();
+                        if (remoteId !== null && state.length > 0) {
                             if (isCompleted) {
                                 await this.cancel(true);
                             } else {
-                                const id = remote_id.id();
+                                const id = remoteId.id();
                                 const result = await this.client?.update(
                                     UpdateRequest.create({
                                         key: { id },
                                         state,
                                     }),
                                 );
-                                if (result?.response.ts) {
+                                if (result?.response.ts !== undefined) {
                                     await this.instanceUpdate(
                                         WorkflowEventType.InstanceUpdate,
                                         id,
@@ -648,9 +689,9 @@ export class WorkflowRs {
         ts: string,
     ): Promise<void> {
         const pendingTasks =
-            (await instance?.pending_tasks()) || new Int32Array([]);
+            (await instance?.pending_tasks()) ?? new Int32Array([]);
         const visitedTasks =
-            (await instance?.visited_tasks()) || new Int32Array([]);
+            (await instance?.visited_tasks()) ?? new Int32Array([]);
         this.notify({
             type,
             payload: {
@@ -665,17 +706,17 @@ export class WorkflowRs {
     async cancel(isCompleted: boolean = false): Promise<void> {
         this.ignoreNextComplete = true;
         const c = this.context.routeContextProvider();
-        if (c) {
+        if (c !== null) {
             const { definitionId, instanceId } = c;
-            if (definitionId && instanceId) {
-                const instance = this.instances.getWith(c);
-                if (instance) {
-                    const remote_id = await instance.get_remote_id();
-                    if (remote_id) {
+            if (definitionId !== '' && instanceId !== '') {
+                const instance = this.instances.getWith(c) ?? null;
+                if (instance !== null) {
+                    const remoteId = (await instance.get_remote_id()) ?? null;
+                    if (remoteId !== null) {
                         const cancelled = !isCompleted;
                         await this.client?.complete(
                             CompleteRequest.create({
-                                key: { id: remote_id.id() },
+                                key: { id: remoteId.id() },
                                 cancelled,
                             }),
                         );
@@ -710,12 +751,14 @@ export class WorkflowRs {
     async navigateTo(taskInfo: TaskInfo): Promise<void> {
         const { definitionId, instanceId } =
             this.context.routeContextProvider();
-        if (definitionId && instanceId) {
+        if (definitionId !== '' && instanceId !== '') {
             const instance = this.instances.getWith({
                 definitionId,
                 instanceId,
+                cancelTo: '',
+                completeTo: '',
             });
-            if (instance) {
+            if (instance !== undefined && instance !== null) {
                 await this.navigateToTask(
                     definitionId,
                     instanceId,
@@ -745,20 +788,29 @@ export class WorkflowRs {
         const idx = WorkflowDefinitions.taskIds[definitionId].findIndex(
             (t) => t === taskId,
         );
-        const instance = this.instances.getWith({ definitionId, instanceId });
-        if (idx !== -1 && instance) {
+        const instance =
+            this.instances.getWith({
+                definitionId,
+                instanceId,
+                cancelTo: '',
+                completeTo: '',
+            }) ?? null;
+        if (idx !== -1 && instance !== null) {
             await this.navigateToTask(definitionId, instanceId, instance, idx);
         }
     }
 
     async startWith(workflow: Workflow, replace: boolean): Promise<void> {
-        const instance = await workflow.definition?.start(workflow.instanceId);
+        const instance =
+            (await workflow.definition?.start(workflow.instanceId)) ?? null;
         const active = await instance?.get_active();
-        if (typeof active === 'number' && instance) {
+        if (typeof active === 'number' && instance !== null) {
             this.instances.setWith(
                 {
                     definitionId: workflow.definitionId,
                     instanceId: workflow.instanceId,
+                    cancelTo: '',
+                    completeTo: '',
                 },
                 instance,
             );
@@ -771,7 +823,7 @@ export class WorkflowRs {
                     state,
                 }),
             );
-            if (result?.response.key?.id) {
+            if (result?.response.key?.id !== undefined) {
                 await instance?.set_remote_id(
                     result?.response.key?.id,
                     BigInt(result?.response.ts),
@@ -801,11 +853,24 @@ export class WorkflowRs {
     async start(): Promise<void> {
         const { definitionId, instanceId } =
             this.context.routeContextProvider();
-        if (definitionId && instanceId) {
-            const definition = await WorkflowDefinitions.load(definitionId);
-            const version = definition?.version() || '';
+        if (definitionId !== '' && instanceId !== '') {
+            const definition =
+                (await WorkflowDefinitions.load(definitionId)) ?? null;
+            const version = definition?.version() ?? '';
             await this.startWith(
-                { definitionId, instanceId, definition, version, exist: false },
+                {
+                    definitionId,
+                    instanceId,
+                    definition,
+                    version,
+                    exist: false,
+                    cancelTo: '',
+                    completeTo: '',
+                    existRemote: false,
+                    remoteId: '',
+                    state: new Uint8Array(),
+                    remoteVersion: null,
+                },
                 false,
             );
         }
@@ -814,12 +879,14 @@ export class WorkflowRs {
     async back(): Promise<void> {
         const { definitionId, instanceId } =
             this.context.routeContextProvider();
-        if (definitionId && instanceId) {
+        if (definitionId !== '' && instanceId !== '') {
             const instance = this.instances.getWith({
                 definitionId,
                 instanceId,
+                cancelTo: '',
+                completeTo: '',
             });
-            if (instance) {
+            if (instance !== undefined && instance !== null) {
                 const active = await instance.back();
                 if (active !== -1) {
                     await this.navigateToTask(
@@ -835,11 +902,13 @@ export class WorkflowRs {
 
     async getVariables<V>(initialVariables: V): Promise<V> {
         const instance = this.instances.get();
-        if (instance) {
-            const active = await instance.get_active();
-            const variables = this.variables.get();
-            if (variables && variables[active]) {
-                return variables[active] as V;
+        if (instance !== undefined && instance !== null) {
+            const active = (await instance.get_active()) ?? null;
+            const variables = this.variables.get() ?? null;
+            if (variables !== null) {
+                if (variables[active] !== null) {
+                    return variables[active] as V;
+                }
             }
         }
         return initialVariables;
@@ -847,14 +916,17 @@ export class WorkflowRs {
 
     async setVariables(object: object): Promise<void> {
         const c = this.context.routeContextProvider();
-        if (c) {
+        if (c !== null) {
             const { definitionId, instanceId } = c;
-            if (definitionId && instanceId) {
-                const instance = this.instances.getWith(c);
-                if (instance) {
+            if (definitionId !== '' && instanceId !== '') {
+                const instance = this.instances.getWith(c) ?? null;
+                if (instance !== null) {
                     const active = await instance.get_active();
-                    const variables = this.variables.getWith(c) || {};
-                    if (active !== undefined && variables) {
+                    const variables = this.variables.getWith(c) ?? {};
+                    if (
+                        active !== undefined &&
+                        Object.keys(variables).length > 0
+                    ) {
                         variables[active] = object;
                         await instance.set_variables(active, object);
                         this.variables.set(variables);
@@ -898,7 +970,10 @@ export class WorkflowRs {
             definitionId,
             instance,
         );
-        this.taskInfoLists.setWith({ definitionId, instanceId }, taskInfoList);
+        this.taskInfoLists.setWith(
+            { definitionId, instanceId, cancelTo: '', completeTo: '' },
+            taskInfoList,
+        );
         this.notify({
             type: WorkflowEventType.NavUpdate,
             payload: { taskInfoList },
@@ -914,7 +989,10 @@ export class WorkflowRs {
             definitionId,
             instance,
         );
-        this.taskInfoLists.setWith({ definitionId, instanceId }, taskInfoList);
+        this.taskInfoLists.setWith(
+            { definitionId, instanceId, cancelTo: '', completeTo: '' },
+            taskInfoList,
+        );
         return taskInfoList;
     }
 
@@ -923,10 +1001,17 @@ export class WorkflowRs {
         instance: JsWorkflowInstance,
     ): Promise<TaskInfo[]> {
         const result: TaskInfo[] = [];
-        const futureTasks = await instance.maybe_visited_tasks();
-        const pendingTasks = await instance.pending_tasks();
-        const visitedTasks = await instance.visited_tasks();
-        if (futureTasks && pendingTasks && visitedTasks) {
+        const futureTasks: Int32Array =
+            (await instance.maybe_visited_tasks()) ?? new Int32Array();
+        const pendingTasks: Int32Array =
+            (await instance.pending_tasks()) ?? new Int32Array();
+        const visitedTasks: Int32Array =
+            (await instance.visited_tasks()) ?? new Int32Array();
+        if (
+            futureTasks.length > 0 &&
+            pendingTasks.length > 0 &&
+            visitedTasks.length > 0
+        ) {
             for (let i = 0; i < futureTasks.length; i++) {
                 const idx = futureTasks[i];
                 const id = WorkflowDefinitions.taskIds[definitionId][idx];
