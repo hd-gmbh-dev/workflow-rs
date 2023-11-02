@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
-import { URL } from 'node:url';
 import {
     cleanUrl,
     normalizePath,
@@ -179,10 +178,6 @@ async function fileToBuiltUrl(
             'base64',
         )}`;
     } else {
-        // emit as asset
-        const { search, hash } = new URL(nextId);
-        const postfix = (search ?? '') + (hash ?? '');
-
         const referenceId = pluginContext.emitFile({
             // Ignore directory structure for asset file names
             name: path.basename(nextFileName),
@@ -195,9 +190,7 @@ async function fileToBuiltUrl(
         if (genAsset !== null) {
             genAsset.set(referenceId, { originalName });
         }
-        url = `__WFRS_FILE__${referenceId}__${
-            postfix !== '' ? `$_${postfix}__` : ``
-        }`; // TODO_BASE
+        url = `__WFRS_FILE__${referenceId}__`;
     }
 
     if (cache !== null) {
