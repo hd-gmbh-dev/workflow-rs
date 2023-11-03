@@ -207,7 +207,7 @@ export class InstanceState<T> {
     }
 }
 
-interface WorkflowContextProvider {
+export interface WorkflowContextProvider {
     routeContextProvider: RouteContextProvider;
     authContextProvider: AuthContextProvider;
 }
@@ -528,7 +528,7 @@ export class WorkflowRs {
                 ListenRequest.create({
                     key: { id: workflow?.remoteId },
                 }),
-                { abort: this.abortController.signal },
+                { abort: this.abortController?.signal },
             );
             listener?.responses.onComplete(() => {
                 console.log('LISTEN: is completed');
