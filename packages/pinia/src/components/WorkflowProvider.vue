@@ -10,15 +10,17 @@ onMounted(workflowStore.resume);
 onBeforeUnmount(workflowStore.leave);
 </script>
 <template>
-    <template v-if="!workflowStore.isLoading">
-        <slot
-            name="sidebar"
-            :navigateTo="workflowStore.navigateTo"
-            :items="workflowStore.taskInfoList"
-        ></slot>
-        <slot name="content">
-            <router-view />
-        </slot>
-    </template>
-    <slot v-else name="loading"></slot>
+    <div>
+        <template v-if="!workflowStore.isLoading">
+            <slot
+                name="sidebar"
+                :navigateTo="workflowStore.navigateTo"
+                :items="workflowStore.taskInfoList"
+            ></slot>
+            <slot name="content">
+                <router-view />
+            </slot>
+        </template>
+        <slot v-else name="loading"></slot>
+    </div>
 </template>
