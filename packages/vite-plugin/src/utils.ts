@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
-
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import os from 'node:os';
 import type { InternalModuleFormat } from 'rollup';
-import type { ResolvedConfig } from 'vite';
+import type { ResolvedBuildOptions, ResolvedConfig } from 'vite';
 export const isWindows = os.platform() === 'win32';
 export function getHash(text: Buffer | string): string {
     return createHash('sha256').update(text).digest('hex').substring(0, 8);
@@ -84,11 +82,13 @@ export function injectQuery(url: string, queryToInject: string): string {
         'relative:///',
     );
     const { search, hash } = resolvedUrl;
+    if (search !== undefined) {
+        throw new Error('search in resolvedUrl is undefined');
+    }
+    const s: string = String(search);
     let pathname = cleanUrl(url);
     pathname = isWindows ? slash(pathname) : pathname;
-    return `${pathname}?${queryToInject}${search ? `&` + search.slice(1) : ''}${
-        hash ?? ''
-    }`;
+    return `${pathname}?${queryToInject}${s !== '' ? `&` : ''}${hash ?? ''}`;
 }
 export function toOutputFilePathInJS(
     filename: string,
@@ -103,25 +103,27 @@ export function toOutputFilePathInJS(
 ): string | { runtime: string } {
     const { renderBuiltUrl } = config.experimental;
     let relative = config.base === '' || config.base === './';
-    if (renderBuiltUrl) {
+    const buildOptions: ResolvedBuildOptions = config.build;
+    const ssr: boolean = buildOptions.ssr === 'true';
+    if (renderBuiltUrl !== undefined) {
         const result = renderBuiltUrl(filename, {
             hostId,
             hostType,
             type,
-            ssr: !!config.build.ssr,
+            ssr,
         });
         if (typeof result === 'object') {
-            if (result.runtime) {
+            if (result.runtime !== undefined) {
                 return { runtime: result.runtime };
             }
             if (typeof result.relative === 'boolean') {
                 relative = result.relative;
             }
-        } else if (result) {
+        } else if (result !== undefined) {
             return result;
         }
     }
-    if (relative && !config.build.ssr) {
+    if (relative && !ssr) {
         return toRelative(filename, hostId);
     }
     return joinUrlSegments(config.base, filename);
@@ -153,8 +155,8 @@ export function removeLeadingSlash(str: string): string {
 }
 
 export function joinUrlSegments(a: string, b: string): string {
-    if (!a || !b) {
-        return a || b || '';
+    if (a !== '' || b !== '') {
+        return a ?? b ?? '';
     }
     if (a[a.length - 1] === '/') {
         a = a.substring(0, a.length - 1);
