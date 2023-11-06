@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import dts from 'vite-plugin-dts';
 import wasm from 'vite-plugin-wasm';
@@ -56,5 +56,14 @@ export default defineConfig({
         alias: {
             '@': path.resolve(__dirname, 'src'),
         },
+    },
+    test: {
+        environment: 'jsdom',
+        clearMocks: true,
+        exclude: ['node_modules/**'],
+        globals: true,
+        include: ['tests/**/*.test.ts'],
+        mockReset: true,
+        restoreMocks: true,
     },
 });
