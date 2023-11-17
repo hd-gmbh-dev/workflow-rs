@@ -522,26 +522,28 @@ export class WorkflowRs {
         }
 
         if (workflow !== null && workflow.remoteId !== '') {
-            await this.timeout();
-            this.abortController = new AbortController();
-            const listener = this.client?.listen(
-                ListenRequest.create({
-                    key: { id: workflow?.remoteId },
-                }),
-                { abort: this.abortController?.signal },
-            );
-            listener?.responses.onComplete(() => {
-                console.log('LISTEN: is completed');
-            });
-            listener?.responses.onError((_) => {});
-            listener?.responses.onMessage(() => {
-                return this.listenerFn.bind(workflow);
-            });
-            try {
-                await listener;
-            } catch (_) {}
+            setTimeout(() => {
+                void (async () => {
+                    this.abortController = new AbortController();
+                    const listener = this.client?.listen(
+                        ListenRequest.create({
+                            key: { id: workflow?.remoteId },
+                        }),
+                        { abort: this.abortController?.signal },
+                    );
+                    listener?.responses.onComplete(() => {
+                        console.log('LISTEN: is completed');
+                    });
+                    listener?.responses.onError((_) => {});
+                    listener?.responses.onMessage(() => {
+                        return this.listenerFn.bind(workflow);
+                    });
+                    try {
+                        await listener;
+                    } catch (_) {}
+                })();
+            }, 0);
         }
-
         await Promise.resolve();
     }
 
