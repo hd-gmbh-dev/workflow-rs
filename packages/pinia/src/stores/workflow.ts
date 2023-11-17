@@ -154,8 +154,8 @@ export const useWorkflowStore = defineStore('wfrs-workflow', () => {
     function authContextProvider(): AuthContextProvider {
         return (): AuthCtx => {
             return {
-                userId: activeUserId.value ?? undefined,
-                token: activeAuthToken.value ?? undefined,
+                userId: activeUserId.value ?? '',
+                token: activeAuthToken.value ?? '',
             };
         };
     }
