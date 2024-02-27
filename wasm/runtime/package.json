@@ -1,6 +1,6 @@
 {
     "name": "@wfrs/runtime",
-    "version": "0.20.1",
+    "version": "0.20.2",
     "description": "Parse BPMN diagrams into workflow-rs binary format .wfrs",
     "license": "MIT",
     "main": "pkg/runtime.js",

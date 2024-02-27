@@ -280,7 +280,7 @@ checksum = "dd8b5dd2ae5ed71462c540258bedcb51965123ad7e7ccf4b9a8cafaa4a63576d"
 
 [[package]]
 name = "parser"
-version = "0.20.1"
+version = "0.20.2"
 dependencies = [
  "anyhow",
  "console_error_panic_hook",
@@ -408,7 +408,7 @@ dependencies = [
 
 [[package]]
 name = "runtime"
-version = "0.20.1"
+version = "0.20.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -698,7 +698,7 @@ dependencies = [
 
 [[package]]
 name = "wfrs-engine"
-version = "0.20.1"
+version = "0.20.2"
 dependencies = [
  "anyhow",
  "async-recursion",
@@ -713,14 +713,14 @@ dependencies = [
 
 [[package]]
 name = "wfrs-model"
-version = "0.20.1"
+version = "0.20.2"
 dependencies = [
  "rkyv",
 ]
 
 [[package]]
 name = "wfrs-validator"
-version = "0.20.1"
+version = "0.20.2"
 dependencies = [
  "log",
  "wfrs-model",
