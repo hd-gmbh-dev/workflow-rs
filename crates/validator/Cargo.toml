@@ -1,12 +1,12 @@
 [package]
 name = "wfrs-validator"
 description = "Workflow RS - Validation on expressions i.e. jsep"
-version = "0.0.18"
+version = "0.20.0"
 license.workspace = true
 edition.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-wfrs-model = { path = "../model", version = "0.0.18" }
+wfrs-model = { path = "../model", version = "0.20.0" }
 log = "0.4.20"

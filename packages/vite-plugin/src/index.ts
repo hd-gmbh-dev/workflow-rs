@@ -78,10 +78,13 @@ export function renderAssetUrlInJS(
         s ??= new MagicString(code);
         const [full, referenceId, postfix = ''] = match;
         const file = ctx.getFileName(referenceId);
-        const viteMetadata = chunk.viteMetadata ?? null;
-        if (viteMetadata !== null) {
-            viteMetadata.importedAssets.add(cleanUrl(file));
+        if (chunk.viteMetadata === null) {
+            chunk.viteMetadata = {
+                importedAssets: new Set([]),
+                importedCss: new Set([]),
+            };
         }
+        chunk.viteMetadata?.importedAssets.add(cleanUrl(file));
         const filename = file + postfix;
         const replacement = toOutputFilePathInJS(
             filename,
