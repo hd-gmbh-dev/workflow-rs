@@ -158,9 +158,9 @@ export async function fileToUrl(
 
 async function fileToBuiltUrl(
     id: string,
-    nextId: string,
+    _nextId: string,
     config: ResolvedConfig,
-    pluginContext: PluginContext,
+    _pluginContext: PluginContext,
 ): Promise<string> {
     const cache = assetCache.get(config) ?? null;
     if (cache !== null) {
@@ -170,34 +170,13 @@ async function fileToBuiltUrl(
         }
     }
     const file = cleanUrl(id);
-    const nextFileName = cleanUrl(nextId);
     const fileContent = await fsp.readFile(file, 'utf-8');
     const content = fromXML(fileContent);
-    let url: string;
-    if (config.command === 'serve') {
-        const mimeType = 'application/octet-stream';
-        // base64 inlined as a string
-        url = `data:${mimeType};base64,${Buffer.from(content).toString(
-            'base64',
-        )}`;
-    } else {
-        const referenceId = pluginContext.emitFile({
-            // Ignore directory structure for asset file names
-            name: path.basename(nextFileName),
-            type: 'asset',
-            source: content,
-        });
 
-        const originalName = normalizePath(path.relative(config.root, file));
-        const genAsset = generatedAssets.get(config) ?? null;
-        if (genAsset !== null) {
-            genAsset.set(referenceId, { originalName });
-        }
-        url = `__WFRS_FILE__${referenceId}__`;
-    }
-
-    if (cache !== null) {
-        cache.set(id, url);
-    }
+    const mimeType = 'application/octet-stream';
+    // base64 inlined as a string
+    const url = `data:${mimeType};base64,${Buffer.from(content).toString(
+        'base64',
+    )}`;
     return url;
 }
